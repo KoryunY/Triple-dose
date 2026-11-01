@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Triple Dose Audio Preview</title>
+<style>
+  :root { color-scheme: dark; --bg: #0d0b14; --panel: #17132a; --edge: #2c2550; --text: #e9e6ff; --dim: #8f88b8; --neon: #ff4fd8; --cyan: #4ff0ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin: 18px 0 8px; }
+  p { color: var(--dim); margin: 0 0 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { background: var(--panel); color: var(--text); border: 1px solid var(--edge); border-radius: 8px; padding: 10px 12px; font: inherit; min-height: 44px; cursor: pointer; }
+  button:active { transform: scale(.97); }
+  button.on { border-color: var(--neon); box-shadow: 0 0 10px #ff4fd855; }
+  #unlock { border-color: var(--cyan); }
+  label { display: flex; align-items: center; gap: 8px; color: var(--dim); }
+  input[type=range] { width: 140px; }
+  #status { font-family: ui-monospace, monospace; font-size: 12px; color: var(--dim); margin-top: 12px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+  <h1>Triple Dose: audio preview</h1>
+  <p>Dev-only test page for <code>src/audio/audio.js</code>. Tap Unlock first.</p>
+  <div class="row">
+    <button id="unlock">Unlock audio</button>
+    <button id="mute">Mute</button>
+    <button id="spam">Spam 'hit' x40</button>
+  </div>
+  <h2>Volume</h2>
+  <div class="row">
+    <label>Music <input id="vm" type="range" min="0" max="1" step="0.05" /></label>
+    <label>SFX <input id="vs" type="range" min="0" max="1" step="0.05" /></label>
+    <label>Pitch <input id="pitch" type="range" min="-12" max="12" step="1" value="0" /> <span id="pv">0</span></label>
+  </div>
+  <h2>Music</h2>
+  <div class="row" id="music"></div>
+  <h2>SFX</h2>
+  <div class="row" id="sfx"></div>
+  <div id="status"></div>
+
+<script type="module">
+  import { audio } from './src/audio/audio.js';
+  const $ = (id) => document.getElementById(id);
+  const status = () => { $('status').textContent = JSON.stringify({ ...audio._debug(), master: undefined, muted: audio.muted, volume: audio.volume }, null, 1); };
+
+  $('unlock').onclick = async () => { await audio.unlock(); status(); };
+  const muteBtn = $('mute');
+  const syncMute = () => { muteBtn.textContent = audio.muted ? 'Unmute' : 'Mute'; muteBtn.classList.toggle('on', audio.muted); };
+  muteBtn.onclick = () => { audio.setMuted(!audio.muted); syncMute(); status(); };
+  syncMute();
+
+  $('vm').value = audio.volume.music;
+  $('vs').value = audio.volume.sfx;
+  $('vm').oninput = (e) => audio.setVolume({ music: +e.target.value });
+  $('vs').oninput = (e) => audio.setVolume({ sfx: +e.target.value });
+  $('pitch').oninput = (e) => { $('pv').textContent = e.target.value; };
+
+  const musicBtns = [];
+  for (const m of [...audio.musicModes, null]) {
+    const b = document.createElement('button');
+    b.textContent = m ?? 'stop';
+    b.dataset.music = m ?? 'null';
+    b.onclick = () => { audio.unlock(); audio.music(m); musicBtns.forEach((x) => x.classList.toggle('on', x === b && m)); status(); };
+    musicBtns.push(b);
+    $('music').append(b);
+  }
+  for (const name of audio.sfxNames) {
+    const b = document.createElement('button');
+    b.textContent = name;
+    b.dataset.sfx = name;
+    b.onclick = () => { audio.unlock(); audio.sfx(name, { pitch: +$('pitch').value }); status(); };
+    $('sfx').append(b);
+  }
+  $('spam').onclick = () => {
+    audio.unlock();
+    let played = 0;
+    for (let i = 0; i < 40; i++) setTimeout(() => { if (audio.sfx('hit', { pitch: (i % 5) - 2 })) played++; if (i === 39) $('status').textContent = `played ${played}/40 (throttled)`; }, i * 20);
+  };
+  setInterval(status, 500);
+  window.audio = audio;
+</script>
+</body>
+</html>

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node tests/engine.test.mjs && node tests/gacha.test.mjs && node --no-warnings tests/api.test.mjs && node tests/expedition.test.mjs",
+    "dev:local": "TD_LOCAL_DB=./.local.sqlite vite"
   },
   "dependencies": {
     "three": "^0.170.0"
