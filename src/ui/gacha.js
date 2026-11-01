@@ -41,7 +41,7 @@ export function openGacha(nav) {
         h('div', { class: 'info' },
           h('div', { class: 'small', style: { color: b.theme[0], fontWeight: 800, letterSpacing: '2px' } }, b.standard ? 'STANDARD BANNER' : 'LIMITED BANNER'),
           h('h2', {}, b.name),
-          featured ? h('div', { class: 'feat' }, svgEl(starsSVG(5), 'stars'), ` ${featured.name} — ${featured.title}`) : h('div', { class: 'feat' }, 'Aya, Lumi and Vera — standard 5★ pool'),
+          featured ? h('div', { class: 'feat' }, svgEl(starsSVG(5), 'stars'), h('span', {}, `${featured.name} — ${featured.title}`)) : h('div', { class: 'feat' }, 'Aya, Lumi and Vera — standard 5★ pool'),
           featured ? h('div', { class: 'small muted', style: { marginTop: '4px' } }, `${featured.passive.name}: ${patronDesc(b.featured, 0)}`) : null,
           h('div', { class: 'row small', style: { marginTop: '8px', gap: '6px', flexWrap: 'wrap' } },
             h('span', { class: 'chip' }, `5★ pity ${pity.five}/${pity.hard}`),

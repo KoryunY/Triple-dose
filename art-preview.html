@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Triple Dose — Art Preview (dev only)</title>
+<style>
+  body { margin: 0; padding: 16px; background: #0b0d12; color: #e8ecf4; font: 13px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 8px 0 16px; }
+  h2 { font-size: 15px; margin: 28px 0 10px; color: #ffd166; border-bottom: 1px solid #2a2f3a; padding-bottom: 4px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .cell span { font-size: 11px; color: #9aa3b5; }
+  .bust svg { width: 200px; height: 240px; display: block; border-radius: 10px; }
+  .splash svg { width: 300px; height: 450px; display: block; border-radius: 12px; }
+  .chibi svg { width: 60px; height: 60px; display: block; }
+  .chibi.big svg { width: 120px; height: 120px; }
+  .icon svg { width: 64px; height: 64px; display: block; }
+  .icon.sm svg { width: 24px; height: 24px; }
+  .card svg { width: 100px; height: 140px; display: block; }
+  .logo svg { width: 400px; height: 170px; display: block; }
+  .stars svg { height: 24px; display: block; }
+  .girl { margin-bottom: 18px; }
+  .girl h3 { margin: 0 0 6px; font-size: 14px; }
+  .girl h3 small { color: #9aa3b5; font-weight: 400; }
+</style>
+</head>
+<body>
+<h1>Triple Dose — art preview</h1>
+<div id="root"></div>
+<script type="module">
+import { GIRLS, GIRL_IDS, BANNERS, SUIT_IDS, DICE_FACES, PERSONA_IDS, STAT_LABELS } from './shared/data.js';
+import { portraitSVG } from './src/art/portrait.js';
+import { suitIcon, diceFaceIcon, personaIcon, statIcon, cardBackSVG, starsSVG, logoSVG } from './src/art/icons.js';
+
+const root = document.getElementById('root');
+const params = new URLSearchParams(location.search);
+const only = params.get('only'); // 'icons' | 'girls' | 'splash' | 'bust' | a girl id
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const cell = (cls, svg, label) => { const c = el('div', 'cell ' + cls); c.innerHTML = svg; if (label) c.appendChild(el('span', '', label)); return c; };
+const section = (title) => { root.appendChild(el('h2', '', title)); const r = el('div', 'row'); root.appendChild(r); return r; };
+
+if (!only || only === 'icons') {
+  let r = section('Logo, card back, stars');
+  r.appendChild(cell('logo', logoSVG()));
+  r.appendChild(cell('card', cardBackSVG()));
+  for (let n = 3; n <= 5; n++) r.appendChild(cell('stars', starsSVG(n), n + '★'));
+  r = section('Suits');
+  for (const s of SUIT_IDS) r.appendChild(cell('icon', suitIcon(s), s));
+  for (const s of SUIT_IDS) r.appendChild(cell('icon sm', suitIcon(s)));
+  r = section('Dice faces');
+  for (const s of Object.keys(DICE_FACES)) r.appendChild(cell('icon', diceFaceIcon(s), s));
+  for (const s of Object.keys(DICE_FACES)) r.appendChild(cell('icon sm', diceFaceIcon(s)));
+  r = section('Personas');
+  for (const s of PERSONA_IDS) r.appendChild(cell('icon', personaIcon(s), s));
+  for (const s of PERSONA_IDS) r.appendChild(cell('icon sm', personaIcon(s)));
+  r = section('Stats');
+  for (const s of Object.keys(STAT_LABELS)) r.appendChild(cell('icon', statIcon(s), s));
+  for (const s of Object.keys(STAT_LABELS)) r.appendChild(cell('icon sm', statIcon(s)));
+}
+
+if (!only || only === 'girls' || only === 'bust') {
+  const r = section('Bust (all girls)');
+  for (const id of GIRL_IDS) r.appendChild(cell('bust', portraitSVG(id, { variant: 'bust' }), `${id} · ${GIRLS[id].look.hairStyle} · ${GIRLS[id].look.accessory}`));
+  const r2 = section('Chibi (all girls) + no-bg');
+  for (const id of GIRL_IDS) r2.appendChild(cell('chibi big', portraitSVG(id, { variant: 'chibi' }), id));
+  for (const id of GIRL_IDS) r2.appendChild(cell('chibi', portraitSVG(id, { variant: 'chibi' })));
+  for (const id of GIRL_IDS.slice(0, 4)) r2.appendChild(cell('chibi big', portraitSVG(id, { variant: 'chibi', bg: false }), id + ' no bg'));
+}
+
+if (!only || only === 'girls' || only === 'splash') {
+  const r = section('Splash — featured girls on their banners');
+  for (const b of BANNERS.filter((b) => b.featured)) r.appendChild(cell('splash', portraitSVG(b.featured, { variant: 'splash', theme: b.theme }), `${b.featured} · ${b.name}`));
+}
+
+if (!only || only === 'girls') {
+  root.appendChild(el('h2', '', 'Every girl × every banner theme (splash)'));
+  for (const id of GIRL_IDS) {
+    const g = el('div', 'girl');
+    g.appendChild(el('h3', '', `${GIRLS[id].name} <small>${GIRLS[id].title} · ${GIRLS[id].rarity}★ ${GIRLS[id].suit}</small>`));
+    const r = el('div', 'row');
+    r.appendChild(cell('bust', portraitSVG(id, { variant: 'bust' }), 'bust'));
+    r.appendChild(cell('chibi big', portraitSVG(id, { variant: 'chibi' }), 'chibi'));
+    for (const b of BANNERS) r.appendChild(cell('splash', portraitSVG(id, { variant: 'splash', theme: b.theme }), b.id));
+    g.appendChild(r);
+    root.appendChild(g);
+  }
+}
+
+if (only && GIRLS[only]) {
+  const r = section(only);
+  r.appendChild(cell('bust', portraitSVG(only, { variant: 'bust' })));
+  r.appendChild(cell('splash', portraitSVG(only, { variant: 'splash' })));
+  r.appendChild(cell('chibi big', portraitSVG(only, { variant: 'chibi' })));
+}
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

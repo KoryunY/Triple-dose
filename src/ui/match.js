@@ -71,6 +71,8 @@ export function openMatch(session, { onExit }) {
       if (b.textContent !== label) b.textContent = label;
     } else {
       bar.parentElement.style.visibility = 'hidden';
+      const b = phaseEl.querySelector('b');
+      if (b.textContent !== PHASE_NAMES[view.phase]) b.textContent = PHASE_NAMES[view.phase];
     }
     if (view.phase !== 'battle') positionSeatTags();
   }

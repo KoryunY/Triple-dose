@@ -295,3 +295,10 @@ input { font: inherit; }
   .card { width: 68px; height: 98px; }
   .home .menu { max-width: 520px; margin-left: auto; margin-right: auto; width: 100%; }
 }
+
+/* rarity stars & tiny inline icons */
+.svg.stars { height: 16px; width: auto; vertical-align: -2px; }
+.svg.stars svg { height: 100%; width: auto; }
+.svg.mini { width: 18px; height: 18px; vertical-align: -3px; }
+.reveal .svg.stars { height: 24px; margin-top: 6px; }
+.splash .info .feat { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }

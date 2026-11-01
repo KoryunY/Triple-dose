@@ -74,4 +74,3 @@ fake += 60000; Date.now = () => fake;
 const v2 = (await call(matchApi, 'GET', { code, guest: g[1] })).view;
 Date.now = realNow;
 console.log('host after Ann disconnects:', v2.hostId === g[1] ? 'Ben ✓' : v2.hostId);
-console.log('ids', { ann: g[0], ben: g[1], cat: g[2], host: v2.hostId });
